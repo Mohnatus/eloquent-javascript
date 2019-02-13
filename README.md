@@ -1,2 +1,3 @@
-# eloquent-javascript
-tasks from the book
+# Eloquent Javascript
+
+Решение задач из книги
