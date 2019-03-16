@@ -1,0 +1,6 @@
+'dialog'
+'dialog' text 'dialog'
+'dialog dia'log dialog'
+textt
+text
+'dia'log'
