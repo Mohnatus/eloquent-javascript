@@ -1,5 +1,7 @@
 const skipSpace = require('./skipSpace');
 
+// пропускаем пробелы
+// распознаем строки, числа, имена переменных и специальные команды
 function parseExpression(program) {
     program = skipSpace(program);
     var match, expr;
@@ -12,9 +14,11 @@ function parseExpression(program) {
     else
         throw new SyntaxError("Неожиданный синтаксис: " + program);
 
+    // проверяем, не является ли выражение приложением
     return parseApply(expr, program.slice(match[0].length));
 }
 
+// после приложения обязательно идут скобки
 function parseApply(expr, program) {
     program = skipSpace(program);
     if (program[0] != "(")
@@ -22,6 +26,10 @@ function parseApply(expr, program) {
 
     program = skipSpace(program.slice(1));
     expr = { type: "apply", operator: expr, args: [] };
+
+    // собираем все параметры, перечисленные в скобках через запятые
+    // с рекурсивным вызовом parseExpression для разбора каждого аргумента
+    // рекурсия непрямая, parseApply и parseExpression вызывают друг друга.
     while (program[0] != ")") {
         var arg = parseExpression(program);
         expr.args.push(arg.expr);
@@ -31,6 +39,8 @@ function parseApply(expr, program) {
         else if (program[0] != ")")
             throw new SyntaxError("Ожидается ',' or ')'");
     }
+
+    // Поскольку приложение само по себе может быть выражением(multiplier(2)(1)), parseApply должна, после разбора приложения, вызвать себя снова, проверив, не идёт ли далее другая пара скобок.
     return parseApply(expr, program.slice(1));
 }
 
