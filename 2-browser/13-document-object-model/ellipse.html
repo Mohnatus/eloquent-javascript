@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <div style="margin-top: 200px; margin-left: 400px;">
+        <img width="50" src="http://www.cat-in-web.ru/images/cat-logo.png" alt="" style="position: relative;">
+    </div>
+    
+
+    <script>
+        var img = document.querySelector('img');
+        var angle = 0;
+        var lastTime = null;
+
+        function animate(time) {
+            if (lastTime != null)
+                angle += (time - lastTime) * 0.001;
+            lastTime = time;
+            img.style.top = (Math.sin(angle) * 20) + "px";
+            img.style.left = (Math.cos(angle) * 200) + "px";
+            requestAnimationFrame(animate);
+        }
+
+        requestAnimationFrame(animate);
+    </script>
+</body>
+</html>
