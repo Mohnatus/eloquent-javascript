@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        button.active {
+            background: green;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="wrapper">
+        <div data-tabname="one">Закладка один</div>
+        <div data-tabname="two">Закладка два</div>
+        <div data-tabname="three">Закладка три</div>
+    </div>
+    <script>
+        function asTabs(node) {
+            let fragment = document.createDocumentFragment();
+            let tabs = Array.from(node.querySelectorAll('[data-tabname]'))
+                .map(tab => {
+                    let name = tab.getAttribute('data-tabname');
+                    let button = document.createElement('button');
+                    button.textContent = name;
+                    fragment.appendChild(button);
+                    button.addEventListener('click', (e) => openTab(name));
+                    return {
+                        name: name,
+                        content: tab,
+                        label: button
+                    }
+                });
+            node.insertBefore(fragment, node.firstElementChild);
+            function openTab(name) {
+                tabs.forEach(tab => {
+                    let isOpen = tab.name === name;
+                    tab.label.classList.toggle('active', isOpen);
+                    tab.content.style.display = isOpen ? 'block' : 'none';
+                })
+            }
+            openTab(tabs[0].name)
+        }
+        asTabs(document.querySelector("#wrapper"));
+    </script>
+</body>
+</html>

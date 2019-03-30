@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+    <style>
+        body {
+            position: relative;
+        }
+        .trail {
+            position: absolute;
+            height: 6px; width: 6px;
+            border-radius: 3px;
+            background: teal;
+        }
+    </style>
+</head>
+<body>
+    
+    <script>
+        const els = [];
+        const count = 100;
+        let waitIntervalId;
+        const waitInterval = 10;
+        const createElement = () => {
+            let el = document.createElement('div');
+            el.classList.add('trail');
+            return el;
+        }
+        const getElement = () => {
+            if (els.length === count) return els.shift();
+            return createElement();
+        }
+        addEventListener('mousemove', (e) => {
+            clearInterval(waitIntervalId);
+            let el = getElement();
+            els.push(el);
+            el.style.top = e.clientY + 'px';
+            el.style.left = e.clientX + 'px';
+            document.body.appendChild(el);
+            // стирать след за мышью
+            waitIntervalId = setInterval(() => {
+                let el = els.shift();
+                if (!el) return;
+                document.body.removeChild(el);
+            }, waitInterval)
+        })    
+    </script>
+
+</body>
+</html>

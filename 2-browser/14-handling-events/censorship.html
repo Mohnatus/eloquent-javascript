@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <input placeholder="Запрещены символы Q, W, X" type="text">
+    <script>
+        let field = document.querySelector('input');
+    
+        let forbidden = ['Q', 'W', 'X'];
+    
+        field.addEventListener('keypress', (e) => {
+            let symbol = String.fromCharCode(e.charCode);
+    
+            if (forbidden.indexOf(symbol.toUpperCase()) !== -1) e.preventDefault();
+        });
+    </script>
+</body>
+</html>
+
+
