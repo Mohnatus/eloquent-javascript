@@ -1,4 +1,6 @@
-const arrows = require('../draw/trackKeys')();
+const trackKeys = require('../draw/trackKeys');
+const pressed = trackKeys();
+
 const Level = require('./level');
 const constants = require('../data/constants');
 
@@ -17,29 +19,58 @@ function runAnimation(frameFunc) {
   requestAnimationFrame(frame);
 }
 
-function runLevel(level, Display, andThen) {
-  let display = new Display(document.body, level);
-  runAnimation(function(step) {
-    level.animate(step, arrows);
+function runLevel(level, display, andThen) {
+  display.setLevel(level);
+
+  let pause = false;
+
+  const step = function(step) {
+    level.animate(step, pressed);
     display.drawFrame(step);
+    if (pause) return false;
     if (level.isFinished()) {
       display.clear();
       if (andThen)
         andThen(level.status);
       return false;
     }
-  });
+  }
+
+  addEventListener('keydown', e => {
+    if (e.keyCode == 27) {
+      pause = !pause;
+
+      if (!pause) runAnimation(step);
+    }
+  })
+
+  runAnimation(step);
 }
 
 function runGame(plans, Display) {
+  let lives = constants.player.startLivesCount;
+  let display = new Display(document.body);
+  display.showLives(lives);
+  trackKeys.listen();
+
   function startLevel(n) {
-    runLevel(new Level(plans[n]), Display, function(status) {
-      if (status == constants.statuses.lost)
+    display.showLevel(n);
+    display.showLives(lives);
+    runLevel(new Level(plans[n]), display, function(status) {
+      if (status == constants.statuses.lost) {
+        lives--;
+        if (lives == 0) {
+          console.log("You lose!");
+          lives = constants.player.startLivesCount;
+          startLevel(0);
+          return;
+        } 
         startLevel(n);
-      else if (n < plans.length - 1)
+      } else if (n < plans.length - 1)
         startLevel(n + 1);
       else
         console.log("You win!");
+        trackKeys.stop();
     });
   }
   startLevel(0);

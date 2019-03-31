@@ -7,7 +7,6 @@ module.exports = {
     
     level: {
         maxStep: 0.05,
-        
     },
 
     coin: {
@@ -39,6 +38,7 @@ module.exports = {
     },
 
     player: {
+        startLivesCount: 3,
         type: "player",
         xSpeed: 7,
         gravity: 30,

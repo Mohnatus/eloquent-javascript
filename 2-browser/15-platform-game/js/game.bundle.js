@@ -278,7 +278,6 @@
 							    
 							    level: {
 							        maxStep: 0.05,
-							        
 							    },
 							
 							    coin: {
@@ -310,6 +309,7 @@
 							    },
 							
 							    player: {
+							        startLivesCount: 3,
 							        type: "player",
 							        xSpeed: 7,
 							        gravity: 30,
@@ -499,8 +499,15 @@
 							const scale = 20;
 							
 							class DOMDisplay {
-							    constructor(parent, level) {
-							        this.wrap = parent.appendChild(createEl('div', 'game'));
+							    constructor(parent) {
+							        this.parent = parent;
+							
+							        this.$lives = this.parent.appendChild(createEl('div', 'lives'));
+							        this.$level = this.parent.appendChild(createEl('div', 'level'))
+							    }
+							
+							    setLevel(level) {
+							        this.wrap = this.parent.appendChild(createEl('div', 'game'));
 							        this.level = level;
 							
 							        this.wrap.appendChild(this.drawBackground());
@@ -568,6 +575,14 @@
 							            this.wrap.scrollTop = center.y + margin - height;
 							    }
 							
+							    showLives(count) {
+							        this.$lives.textContent = count;
+							    }
+							
+							    showLevel(level) {
+							        this.$level.textContent = level;
+							    }
+							
 							    clear() {
 							        this.wrap.parentNode.removeChild(this.wrap);
 							    }
@@ -576,23 +591,41 @@
 							module.exports = DOMDisplay;
 						},
 						"trackKeys.js": function (exports, module, require) {
-							var arrowCodes = {37: "left", 38: "up", 39: "right"};
+							const codes = {
+							    37: "left", 
+							    38: "up", 
+							    39: "right"
+							};
 							
-							function trackKeys() {
-							    const pressed = Object.create(null);
-							    function handler(event) {
-							        if (arrowCodes.hasOwnProperty(event.keyCode)) {
-							            const down = event.type == "keydown";
-							            pressed[arrowCodes[event.keyCode]] = down;
-							            event.preventDefault();
-							        }
+							const pressed = Object.create(null);
+							
+							function handler(event) {
+							    if (codes.hasOwnProperty(event.keyCode)) {
+							        const down = event.type == "keydown";
+							        pressed[codes[event.keyCode]] = down;
+							        event.preventDefault();
 							    }
+							}
+							
+							function listen() {
 							    addEventListener("keydown", handler);
 							    addEventListener("keyup", handler);
+							}
+							
+							function stop() {
+							    removeEventListener("kyedown", handler);
+							    removeEventListener("keyup", handler);
+							}
+							
+							function getPressed() {
 							    return pressed;
 							}
 							
-							module.exports = trackKeys;
+							getPressed.listen = listen;
+							getPressed.stop = stop;
+							
+							
+							module.exports = getPressed;
 						}
 					},
 					"game": {
@@ -722,7 +755,9 @@
 							module.exports = Level;
 						},
 						"run.js": function (exports, module, require) {
-							const arrows = require('../draw/trackKeys')();
+							const trackKeys = require('../draw/trackKeys');
+							const pressed = trackKeys();
+							
 							const Level = require('./level');
 							const constants = require('../data/constants');
 							
@@ -741,29 +776,58 @@
 							  requestAnimationFrame(frame);
 							}
 							
-							function runLevel(level, Display, andThen) {
-							  let display = new Display(document.body, level);
-							  runAnimation(function(step) {
-							    level.animate(step, arrows);
+							function runLevel(level, display, andThen) {
+							  display.setLevel(level);
+							
+							  let pause = false;
+							
+							  const step = function(step) {
+							    level.animate(step, pressed);
 							    display.drawFrame(step);
+							    if (pause) return false;
 							    if (level.isFinished()) {
 							      display.clear();
 							      if (andThen)
 							        andThen(level.status);
 							      return false;
 							    }
-							  });
+							  }
+							
+							  addEventListener('keydown', e => {
+							    if (e.keyCode == 27) {
+							      pause = !pause;
+							
+							      if (!pause) runAnimation(step);
+							    }
+							  })
+							
+							  runAnimation(step);
 							}
 							
 							function runGame(plans, Display) {
+							  let lives = constants.player.startLivesCount;
+							  let display = new Display(document.body);
+							  display.showLives(lives);
+							  trackKeys.listen();
+							
 							  function startLevel(n) {
-							    runLevel(new Level(plans[n]), Display, function(status) {
-							      if (status == constants.statuses.lost)
+							    display.showLevel(n);
+							    display.showLives(lives);
+							    runLevel(new Level(plans[n]), display, function(status) {
+							      if (status == constants.statuses.lost) {
+							        lives--;
+							        if (lives == 0) {
+							          console.log("You lose!");
+							          lives = constants.player.startLivesCount;
+							          startLevel(0);
+							          return;
+							        } 
 							        startLevel(n);
-							      else if (n < plans.length - 1)
+							      } else if (n < plans.length - 1)
 							        startLevel(n + 1);
 							      else
 							        console.log("You win!");
+							        trackKeys.stop();
 							    });
 							  }
 							  startLevel(0);

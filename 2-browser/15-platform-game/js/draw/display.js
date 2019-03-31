@@ -7,8 +7,15 @@ const createEl = (name, className) => {
 const scale = 20;
 
 class DOMDisplay {
-    constructor(parent, level) {
-        this.wrap = parent.appendChild(createEl('div', 'game'));
+    constructor(parent) {
+        this.parent = parent;
+
+        this.$lives = this.parent.appendChild(createEl('div', 'lives'));
+        this.$level = this.parent.appendChild(createEl('div', 'level'))
+    }
+
+    setLevel(level) {
+        this.wrap = this.parent.appendChild(createEl('div', 'game'));
         this.level = level;
 
         this.wrap.appendChild(this.drawBackground());
@@ -74,6 +81,14 @@ class DOMDisplay {
             this.wrap.scrollTop = center.y - margin;
         else if (center.y > bottom - margin)
             this.wrap.scrollTop = center.y + margin - height;
+    }
+
+    showLives(count) {
+        this.$lives.textContent = count;
+    }
+
+    showLevel(level) {
+        this.$level.textContent = level;
     }
 
     clear() {
